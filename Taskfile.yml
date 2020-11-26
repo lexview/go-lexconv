@@ -1,0 +1,27 @@
+version: '3'
+
+vars:
+  GIT_COMMIT:
+    sh: git log -n 1 --format=%h
+
+  GO_PACKAGES:
+    sh: go list ./...
+
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+  build:
+    cmds:
+      - go build ./cmd/...
+
+  install:
+    cmds:
+      - go install ./cmd/lexconv
+
+  go-get:
+    desc: "Golang install external modules"
+    cmds:
+      - go get -u -v ./...
