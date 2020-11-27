@@ -6,6 +6,8 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"bytes"
+	"strconv"
 )
 
 type Paper struct {
@@ -32,20 +34,24 @@ func (self Paper) GetImageRect(dpi int) image.Rectangle {
 }
 
 
-func main() {
-
-	/* Prepare Lexicon render system */
-	mainFontStream, _ := os.Open("./fonts/VGA0.SFN")
+func LoadFont(name string) *Font {
+	mainFontStream, _ := os.Open(name)
 	newFontReader := NewFontReader(mainFontStream)
 	newFontReader.SetGlyphHeight(19)
 	mainFont, _ := newFontReader.Read()
+	log.Printf("Load Font %s: glyph count = %d", name, mainFont.GetGlyphCount())
 	mainFontStream.Close()
+	return mainFont
+}
 
-	log.Printf("Main Lexicon Font: glyph count = %d", mainFont.GetGlyphCount())
+func main() {
+
+	/* Prepare Lexicon render system */
+	mainFont0 := LoadFont("./fonts/VGA0.SFN")
+	mainFont1 := LoadFont("./fonts/VGA1.SFN")
 
 	/* Glyph render */
 	renderer := NewGlyphRender()
-	renderer.SetFont(mainFont)
 
 	/* Document reader */
 	mainDocumentStream, _ := os.Open("./os-01.lex")
@@ -79,11 +85,47 @@ func main() {
 		}
 	}
 
-	/* Render rune */
-	for idx, row := range document.GetLines() {
-		for pos, ch := range row {
-			/* err := */ renderer.Render( ch, 8 * pos, 19 * idx, img )
+	/* Render process */
+	var defaultBaseline = 19
+	var currentBaseline = defaultBaseline
+	var controlMode bool = false 
+	var currentLine = 0
+	var currentPos = 0
+	for _, line := range document.GetLines() {
+
+		/* Reset renderer */
+		renderer.SetFont(mainFont0)
+		data := line.GetData()
+		currentPos = 0
+
+		/* Change baseline size */
+		if bytes.HasPrefix(data, []byte{0xFF, 0xE8}) {
+			newMultiply := string(data[2:])
+			value, _ := strconv.ParseFloat(newMultiply, 64)
+			log.Printf("baseline = %+v", value)
+			currentBaseline = int(19 * value)
+			continue
 		}
+
+		for _, ch := range data {
+			if controlMode {
+				if ch == '0' {
+					renderer.SetFont(mainFont0)
+				} else if ch == '1' {
+					renderer.SetFont(mainFont1)
+				}
+				controlMode = false
+			} else {
+				if ch == 0xFF {
+					controlMode = true
+				} else {
+					/* err := */ renderer.Render( ch, currentPos, currentLine, img )
+					currentPos = currentPos + 8
+				}
+			}
+		}
+		currentLine = currentLine + currentBaseline
+
 	}
 
 	/* Save image */
