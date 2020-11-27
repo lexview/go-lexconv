@@ -37,10 +37,21 @@ func main() {
 	/* Prepare Lexicon render system */
 	mainFontStream, _ := os.Open("./fonts/VGA0.SFN")
 	newFontReader := NewFontReader(mainFontStream)
+	newFontReader.SetGlyphHeight(19)
 	mainFont, _ := newFontReader.Read()
 	mainFontStream.Close()
 
 	log.Printf("Main Lexicon Font: glyph count = %d", mainFont.GetGlyphCount())
+
+	/* Glyph render */
+	renderer := NewGlyphRender()
+	renderer.SetFont(mainFont)
+
+	/* Document reader */
+	mainDocumentStream, _ := os.Open("./os-01.lex")
+	documentReader := NewLexiconDocumentReader(mainDocumentStream)
+	document, _ := documentReader.Read()
+	mainDocumentStream.Close()
 
 	/* Create A4 portrait paper */
 	p := Paper{
@@ -50,7 +61,7 @@ func main() {
 	}
 
 	/* Initialize image with 300 DPI */
-	var dpi int = 300
+	var dpi int = 75
 	imageRect := p.GetImageRect(dpi)
 
 	log.Printf("  %s    %d x %d mm ( %d x %d )", p.Name, p.Width, p.Height, imageRect.Max.X, imageRect.Max.Y)
@@ -69,7 +80,11 @@ func main() {
 	}
 
 	/* Render rune */
-	
+	for idx, row := range document.GetLines() {
+		for pos, ch := range row {
+			/* err := */ renderer.Render( ch, 8 * pos, 19 * idx, img )
+		}
+	}
 
 	/* Save image */
 	stream, err := os.Create("image.png")

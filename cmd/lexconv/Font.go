@@ -1,6 +1,7 @@
 package main
 
 type Font struct {
+	glyphs []Glyph
 }
 
 func NewFont() *Font {
@@ -9,5 +10,13 @@ func NewFont() *Font {
 }
 
 func (self Font) GetGlyphCount() int {
-	return 0
+	return len(self.glyphs)
+}
+
+func (self *Font) AddGlyph(g Glyph) {
+	self.glyphs = append(self.glyphs, g)
+}
+
+func (self Font) GetGlyphByIndex(index byte) Glyph {
+	return self.glyphs[index]
 }
