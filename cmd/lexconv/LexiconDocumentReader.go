@@ -1,8 +1,9 @@
 package main
 
 import (
-	"io"
 	"bytes"
+	"io"
+	"io/ioutil"
 )
 
 type LexiconDocumentReader struct {
@@ -19,11 +20,12 @@ func (self *LexiconDocumentReader) Read() (*LexiconDocument, error) {
 
 	newLexiconDocument := NewLexiconDocument()
 
-	data := make([]byte, 8192)
+	content, err1 := ioutil.ReadAll(self.reader)
+	if err1 != nil {
+		return nil, err1
+	}
 
-	self.reader.Read(data)
-
-	rows := bytes.Split(data, []byte{0x0A})
+	rows := bytes.Split(content, []byte{0x0A})
 	for _, row := range rows {
 		newLexiconDocument.AddLine(row)
 	}

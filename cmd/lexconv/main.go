@@ -38,6 +38,16 @@ func main() {
 	newFontManager := NewFontManager()
 	newFontManager.LoadFont('0', "./fonts/VGA0.SFN")
 	newFontManager.LoadFont('1', "./fonts/VGA1.SFN")
+	newFontManager.LoadFont('2', "./fonts/VGA2.SFN")
+	newFontManager.LoadFont('3', "./fonts/VGA3.SFN")
+	newFontManager.LoadFont('4', "./fonts/VGA4.SFN")
+	newFontManager.LoadFont('5', "./fonts/VGA5.SFN")
+	newFontManager.LoadFont('6', "./fonts/VGA6.SFN")
+	newFontManager.LoadFont('7', "./fonts/VGA7.SFN")
+	newFontManager.LoadFont('8', "./fonts/VGA8.SFN")
+	newFontManager.LoadFont('9', "./fonts/VGA9.SFN")
+	newFontManager.LoadFont('A', "./fonts/VGA10.SFN")
+	newFontManager.LoadFont('B', "./fonts/VGA11.SFN")
 
 	/* Document reader */
 	mainDocumentStream, _ := os.Open("./os-01.lex")
